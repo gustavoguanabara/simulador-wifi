@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Simulador Wi-Fi - Propagação e Cobertura Residencial</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Header e Barra de Ferramentas Superior -->
+    <header id="header-bar">
+      <!-- Linha 1 no Mobile: Marca e Ações de Projeto / Dicas -->
+      <div class="header-row-primary">
+        <div class="brand-section">
+          <h1 class="brand-title">
+            <span>📡</span> <span class="brand-name">Simulador Wi-Fi</span>
+            <span class="badge-version">v2.0.1</span>
+          </h1>
+        </div>
+
+        <div class="header-actions-group">
+          <button id="btn-open-templates" class="btn btn-icon" data-tooltip="Modelos Prontos de Ambientes (🏠)">
+            <span>🏠</span>
+          </button>
+
+          <button id="btn-export-json" class="btn btn-icon" data-tooltip="Salvar Projeto em JSON (💾)">
+            <span>💾</span>
+          </button>
+
+          <button id="btn-import-json" class="btn btn-icon" data-tooltip="Abrir Projeto Salvo (📂)">
+            <span>📂</span>
+          </button>
+          <input type="file" id="file-input-json" accept=".json,application/json" style="display:none">
+
+          <button id="btn-toggle-tips" class="btn btn-icon btn-tips" data-tooltip="Dicas e Boas Práticas Wi-Fi (💡)">
+            <span>💡</span>
+            <span class="tips-btn-text">Dicas</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Linha 2 no Mobile: Ferramentas Operacionais e Frequência -->
+      <div class="header-row-tools">
+        <div class="tools-buttons-group">
+          <button id="btn-tool-select" class="btn btn-icon active" data-tool="select" data-tooltip="Selecionar e Mover (👆)">
+            <span>👆</span>
+          </button>
+
+          <!-- Dropdown Construir -->
+          <div class="dropdown-wrapper">
+            <button id="btn-build-menu" class="btn btn-icon dropdown-toggle" data-tooltip="Construir Paredes, Portas e Janelas (🏗️)">
+              <span id="btn-build-icon">🏗️</span><span class="dropdown-arrow">▾</span>
+            </button>
+            <div id="menu-build" class="dropdown-popover">
+              <div class="dropdown-section-title">🧱 Paredes Estruturais</div>
+              <button class="dropdown-item" data-build-material="alvenaria">
+                <span class="item-icon">🧱</span>
+                <div class="item-info">
+                  <span class="item-name">Parede de Alvenaria (Tijolo)</span>
+                  <span class="item-meta">Perda: 6.5 dB (2.4G) | 12 dB (5G)</span>
+                </div>
+              </button>
+              <button class="dropdown-item" data-build-material="concreto">
+                <span class="item-icon">🏛️</span>
+                <div class="item-info">
+                  <span class="item-name">Parede de Concreto Armado</span>
+                  <span class="item-meta">Perda: 15.0 dB (2.4G) | 25 dB (5G)</span>
+                </div>
+              </button>
+              <button class="dropdown-item" data-build-material="drywall">
+                <span class="item-icon">📄</span>
+                <div class="item-info">
+                  <span class="item-name">Divisória Drywall / Gesso</span>
+                  <span class="item-meta">Perda: 3.0 dB (2.4G) | 5 dB (5G)</span>
+                </div>
+              </button>
+
+              <div class="dropdown-section-title">🚪 Portas & Janelas (Nas Paredes)</div>
+              <button class="dropdown-item" data-build-aperture="door" data-build-material="madeira">
+                <span class="item-icon">🚪</span>
+                <div class="item-info">
+                  <span class="item-name">Porta de Madeira</span>
+                  <span class="item-meta">Integrada na parede (Perda: 3.5 dB / 6 dB)</span>
+                </div>
+              </button>
+              <button class="dropdown-item" data-build-aperture="window" data-build-material="vidro">
+                <span class="item-icon">🪟</span>
+                <div class="item-info">
+                  <span class="item-name">Janela de Vidro</span>
+                  <span class="item-meta">Integrada na parede (Perda: 2.0 dB / 4 dB)</span>
+                </div>
+              </button>
+
+              <div class="dropdown-section-title">🪞 Superfícies Especiais</div>
+              <button class="dropdown-item" data-build-material="espelho">
+                <span class="item-icon">🪞</span>
+                <div class="item-info">
+                  <span class="item-name">Espelho / Painel Refletivo</span>
+                  <span class="item-meta">Perda: 12.0 dB (2.4G) | 18 dB (5G)</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dropdown Adicionar Objetos -->
+          <div class="dropdown-wrapper">
+            <button id="btn-add-menu" class="btn btn-icon dropdown-toggle" data-tooltip="Adicionar Objetos e Dispositivos (➕)">
+              <span>➕</span><span class="dropdown-arrow">▾</span>
+            </button>
+            <div id="menu-add" class="dropdown-popover dropdown-popover-wide">
+              <div class="dropdown-grid-columns">
+                <!-- Coluna 1: Equipamentos Wi-Fi & Dispositivos Eletrônicos -->
+                <div class="dropdown-col">
+                  <div class="dropdown-section-title">📶 Equipamentos Wi-Fi</div>
+                  <button class="dropdown-item" data-add-type="router_main">
+                    <span class="item-icon">📶</span>
+                    <div class="item-info">
+                      <span class="item-name">Roteador Principal (AP)</span>
+                      <span class="item-meta">Dual-Band 20 dBm (Gateway)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="router_mesh">
+                    <span class="item-icon">📡</span>
+                    <div class="item-info">
+                      <span class="item-name">Roteador Mesh / Repetidor</span>
+                      <span class="item-meta">Extensor de Sinal (17 dBm)</span>
+                    </div>
+                  </button>
+
+                  <div class="dropdown-section-title">💻 Dispositivos Eletrônicos</div>
+                  <button class="dropdown-item" data-add-type="tv">
+                    <span class="item-icon">📺</span>
+                    <div class="item-info">
+                      <span class="item-name">Smart TV</span>
+                      <span class="item-meta">Cliente receptor de mídia</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="pc">
+                    <span class="item-icon">🖥️</span>
+                    <div class="item-info">
+                      <span class="item-name">PC Desktop</span>
+                      <span class="item-meta">Computador de trabalho</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="laptop">
+                    <span class="item-icon">💻</span>
+                    <div class="item-info">
+                      <span class="item-name">Notebook</span>
+                      <span class="item-meta">Cliente portátil</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="videogame">
+                    <span class="item-icon">🎮</span>
+                    <div class="item-info">
+                      <span class="item-name">Console de Videogame</span>
+                      <span class="item-meta">Console para jogos online</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="phone">
+                    <span class="item-icon">📱</span>
+                    <div class="item-info">
+                      <span class="item-name">Smartphone</span>
+                      <span class="item-meta">Dispositivo móvel</span>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Coluna 2: Mobiliário Residencial & Interferências RF -->
+                <div class="dropdown-col">
+                  <div class="dropdown-section-title">🛋️ Mobiliário Residencial</div>
+                  <button class="dropdown-item" data-add-type="bed">
+                    <span class="item-icon">🛏️</span>
+                    <div class="item-info">
+                      <span class="item-name">Cama de Casal</span>
+                      <span class="item-meta">Madeira e estofado (Atenuação ~2.5 dB)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="sofa">
+                    <span class="item-icon">🛋️</span>
+                    <div class="item-info">
+                      <span class="item-name">Sofá</span>
+                      <span class="item-meta">Espuma densa e molas (~3 dB)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="table">
+                    <span class="item-icon">🪑</span>
+                    <div class="item-info">
+                      <span class="item-name">Mesa de Jantar / Trabalho</span>
+                      <span class="item-meta">Madeira / Vidro (~1.5 dB)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="wardrobe">
+                    <span class="item-icon">🗄️</span>
+                    <div class="item-info">
+                      <span class="item-name">Armário / Guarda-Roupa</span>
+                      <span class="item-meta">Madeira densa e roupas (~5 dB)</span>
+                    </div>
+                  </button>
+
+                  <div class="dropdown-section-title">🚪 Portas & Janelas (Nas Paredes)</div>
+                  <button class="dropdown-item" data-add-type="door">
+                    <span class="item-icon">🚪</span>
+                    <div class="item-info">
+                      <span class="item-name">Porta de Madeira</span>
+                      <span class="item-meta">Encaixada na parede (3.5 dB / 6 dB)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="window">
+                    <span class="item-icon">🪟</span>
+                    <div class="item-info">
+                      <span class="item-name">Janela de Vidro</span>
+                      <span class="item-meta">Encaixada na parede (2.0 dB / 4 dB)</span>
+                    </div>
+                  </button>
+
+                  <div class="dropdown-section-title">⚠️ Bloqueios & Interferências RF</div>
+                  <button class="dropdown-item" data-add-type="fridge">
+                    <span class="item-icon">🧊</span>
+                    <div class="item-info">
+                      <span class="item-name">Geladeira / Refrigerador</span>
+                      <span class="item-meta">Bloqueio metálico pesado (&gt; 25 dB)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="microwave">
+                    <span class="item-icon">📻</span>
+                    <div class="item-info">
+                      <span class="item-name">Forno Micro-ondas</span>
+                      <span class="item-meta">Bloqueio metálico 20 dB + Ruído 2.4G</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="mirror_obj">
+                    <span class="item-icon">🪞</span>
+                    <div class="item-info">
+                      <span class="item-name">Espelho de Parede</span>
+                      <span class="item-meta">Filme metálico refletivo (~14 dB)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="aquarium">
+                    <span class="item-icon">🐠</span>
+                    <div class="item-info">
+                      <span class="item-name">Aquário com Água</span>
+                      <span class="item-meta">Absorção RF intensa por água (~16 dB)</span>
+                    </div>
+                  </button>
+                  <button class="dropdown-item" data-add-type="cordless_phone">
+                    <span class="item-icon">☎️</span>
+                    <div class="item-info">
+                      <span class="item-name">Telefone Sem Fio 2.4 GHz</span>
+                      <span class="item-meta">Interferência não-Wi-Fi de co-canal</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-vertical"></div>
+
+        <!-- Seletor de Frequência do Roteador Principal -->
+        <div class="freq-selector-container">
+          <div class="segmented-control">
+            <button class="seg-btn" data-freq="2.4" data-tooltip="Banda 2.4 GHz (Maior alcance e penetração)">2.4GHz</button>
+            <button class="seg-btn active" data-freq="5.0" data-tooltip="Banda 5.0 GHz (Alta velocidade e maior atenuação)">5GHz</button>
+            <button class="seg-btn" data-freq="multi" data-tooltip="Dual-Band (2.4 GHz + 5.0 GHz simultâneos)">Dual</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Backdrop Escuro para Menus no Mobile -->
+    <div id="dropdown-backdrop" class="dropdown-backdrop"></div>
+
+    <!-- Área Central da Viewport com HUD Fixo Sobreposto -->
+    <div id="viewport-container" class="viewport-container">
+      <!-- Viewport Rolável do Canvas -->
+      <main id="main-viewport">
+        <!-- Scaler para Zoom e Pan Fluido sem Degradação Gráfica -->
+        <div id="canvas-scaler">
+          <div id="canvas-container">
+            <!-- Canvas Inferior: Mapa de Calor / Heatmap (Orientado a Eventos) -->
+            <canvas id="heatmap-canvas"></canvas>
+            <!-- Canvas Superior: Paredes, Dispositivos, Ondas e Gizmos (60 FPS Contínuo) -->
+            <canvas id="scene-canvas"></canvas>
+          </div>
+        </div>
+      </main>
+
+      <!-- HUD Flutuante Fixo (Não se move ao rolar ou arrastar a planta) -->
+      <!-- Widget Flutuante de Zoom e Enquadramento (Fit-to-Screen) -->
+      <div id="zoom-controls" class="zoom-controls" aria-label="Controles de Zoom">
+        <button id="btn-zoom-in" class="btn btn-icon zoom-btn" data-tooltip="Aproximar Zoom (+)">
+          <span>➕</span>
+        </button>
+        <button id="btn-zoom-reset" class="btn zoom-btn zoom-val-btn" data-tooltip="Zoom 100% (Escala Real 1:1)">
+          <span id="zoom-value-text">100%</span>
+        </button>
+        <button id="btn-zoom-out" class="btn btn-icon zoom-btn" data-tooltip="Afastar Zoom (-)">
+          <span>➖</span>
+        </button>
+        <button id="btn-zoom-fit" class="btn btn-icon zoom-btn btn-fit" data-tooltip="Enquadrar Planta Inteira (Fit)">
+          <span>🎯</span>
+        </button>
+      </div>
+
+      <!-- Barra de Ações Rápidas Flutuante (Item Selecionado - Toque / Desktop) -->
+      <div id="selection-toolbar" class="selection-toolbar hidden" aria-label="Ações do Item Selecionado">
+        <div class="selection-badge">
+          <span id="sel-icon" class="sel-icon">🧱</span>
+          <div class="sel-info">
+            <span id="sel-title" class="sel-title">Parede de Alvenaria</span>
+            <span id="sel-sub" class="sel-sub">3.50m • 6.5 dB</span>
+          </div>
+        </div>
+
+        <div class="selection-actions" id="sel-actions-container">
+          <!-- Ação para Portas: Inverter sentido e lado da abertura -->
+          <button id="btn-sel-door-swing" class="btn btn-action" data-tooltip="Inverter Lado da Abertura da Porta">
+            <span>🚪 Inverter Lado</span>
+          </button>
+
+          <!-- Ação para Aparelhos Eletrônicos: Ligar / Desligar (Power Toggle) -->
+          <button id="btn-sel-power" class="btn btn-action" data-tooltip="Ligar / Desligar Aparelho (ou clique consecutivo no objeto)">
+            <span id="btn-sel-power-text">⚡ Desligar</span>
+          </button>
+
+          <!-- Ação para Móveis e Equipamentos: Girar 90° -->
+          <button id="btn-sel-rotate" class="btn btn-action" data-tooltip="Girar 90° no Sentido Horário">
+            <span>🔄 Girar 90°</span>
+          </button>
+
+          <!-- Ação para Paredes: Mudar Material de Atenuação -->
+          <div id="sel-wall-materials" class="sel-material-group">
+            <button class="btn btn-icon btn-mat" data-mat="alvenaria" data-tooltip="Alvenaria / Tijolo">🧱</button>
+            <button class="btn btn-icon btn-mat" data-mat="concreto" data-tooltip="Concreto Armado">🏛️</button>
+            <button class="btn btn-icon btn-mat" data-mat="drywall" data-tooltip="Divisória Drywall">📄</button>
+            <button class="btn btn-icon btn-mat" data-mat="espelho" data-tooltip="Painel Refletivo / Espelho">🪞</button>
+          </div>
+
+          <!-- Ação Universal: Excluir Item -->
+          <button id="btn-sel-delete" class="btn btn-danger btn-action" data-tooltip="Excluir Item Selecionado (Del)">
+            <span>🗑️ Excluir</span>
+          </button>
+
+          <!-- Fechar / Desmarcar -->
+          <button id="btn-sel-close" class="btn btn-icon btn-close-sel" data-tooltip="Desmarcar (Esc)">
+            <span>✕</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Legenda Visual de Sinal (Recolhível no Mobile) -->
+      <div id="signal-legend" class="signal-legend">
+        <div class="legend-header" id="legend-header" title="Toque para alternar visibilidade">
+          <div class="legend-title">Intensidade (RSSI)</div>
+          <span class="legend-chevron">▾</span>
+        </div>
+        <div class="legend-body" id="legend-body">
+          <div class="legend-bar">
+            <span class="legend-swatch" style="background-color: #2ecc71;"></span>
+            <span>Excelente (&ge; -55 dBm)</span>
+          </div>
+          <div class="legend-bar">
+            <span class="legend-swatch" style="background-color: #f1c40f;"></span>
+            <span>Bom (-55 a -67 dBm)</span>
+          </div>
+          <div class="legend-bar">
+            <span class="legend-swatch" style="background-color: #e67e22;"></span>
+            <span>Instável (-67 a -78 dBm)</span>
+          </div>
+          <div class="legend-bar">
+            <span class="legend-swatch" style="background-color: #e74c3c;"></span>
+            <span>Muito Fraco (-78 a -88 dBm)</span>
+          </div>
+          <div class="legend-bar">
+            <span class="legend-swatch" style="background-color: #2f3542;"></span>
+            <span>Sem Sinal (&lt; -88 dBm)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aba Flutuante Lateral para Acesso Rápido de Dicas -->
+    <button id="btn-floating-tips" class="tips-floating-tab" data-tooltip="Abrir Guia de Dicas (💡)">
+      <span>💡</span>
+      <span>Dicas</span>
+    </button>
+
+    <!-- Painel Lateral de Dicas e Boas Práticas (Side Drawer) -->
+    <aside id="tips-drawer" class="tips-drawer" aria-hidden="true">
+      <div class="tips-header">
+        <div class="tips-title-group">
+          <div class="tips-title">
+            <span>💡</span> Dicas & Performance
+          </div>
+          <div class="tips-subtitle">Guia de posicionamento e cobertura Wi-Fi</div>
+        </div>
+        <button id="btn-close-tips" class="tips-close-btn" data-tooltip="Recolher Painel (Esc)">&times;</button>
+      </div>
+
+      <div class="tips-content">
+        <!-- Card 1: Diagnóstico Dinâmico ao Vivo da Planta -->
+        <div class="tips-live-card">
+          <div class="tips-live-header">
+            <div class="live-badge-wrapper">
+              <span class="live-pulse-dot"></span>
+              <span>Diagnóstico do Cenário Atual</span>
+            </div>
+            <span style="font-size: 0.68rem; color: var(--text-muted); text-transform: none;">Ao vivo</span>
+          </div>
+          <div id="tips-live-body" class="tips-live-body">
+            <!-- Injetado dinamicamente via WifiSim.UI.TipsPanel -->
+          </div>
+        </div>
+
+        <!-- Card 2: Posicionamento dos Dispositivos Wi-Fi -->
+        <div class="tips-section-card">
+          <div class="tips-section-title">
+            <span>📍</span> Posicionamento do Roteador / AP
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🎯</span>
+            <div class="tip-details">
+              <span class="tip-title">Posicionamento Centralizado</span>
+              <span class="tip-desc">
+                Melhor posicionar o roteador em um ponto mais central para distribuir melhor o sinal em 360°, reduzindo sinal desperdiçado para fora da residência e eliminando áreas de sombra em cômodos opostos.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">📏</span>
+            <div class="tip-details">
+              <span class="tip-title">Altura Adequada (1,2m a 1,8m)</span>
+              <span class="tip-desc">
+                Instale o roteador na altura dos olhos ou sobre móveis altos. No chão, grande parte da energia RF é absorvida pelo piso e rodapés antes de alcançar os receptores.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">📦</span>
+            <div class="tip-details">
+              <span class="tip-title">Evite Armários e Móveis Fechados</span>
+              <span class="tip-desc">
+                Nunca esconda o roteador dentro de gavetas, racks fechados ou atrás da TV. Cada painel de madeira ou vidro causa perda imediata de 3 a 8 dB logo na saída do transmissor.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🚪</span>
+            <div class="tip-details">
+              <span class="tip-title">Aproveite Corredores e Portas Abertas</span>
+              <span class="tip-desc">
+                Alinhar o roteador com corredores permite que as ondas eletromagnéticas se propaguem pelo ar sem ter que atravessar paredes maciças de alvenaria.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Interferências Eletromagnéticas e Obstáculos -->
+        <div class="tips-section-card">
+          <div class="tips-section-title">
+            <span>⚡</span> Interferências & Vilões do Sinal
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">📻</span>
+            <div class="tip-details">
+              <span class="tip-title">Afaste o Roteador do Micro-ondas</span>
+              <span class="tip-desc">
+                Fornos micro-ondas operam na mesma frequência de 2.45 GHz e vazam intensa radiação eletromagnética, causando congelamento de chamadas e perda maciça de pacotes. Mantenha pelo menos 2 a 3 metros de distância.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🪞</span>
+            <div class="tip-details">
+              <span class="tip-title">Espelhos Causam Interferência e Reflexão</span>
+              <span class="tip-desc">
+                Espelhos possuem uma película metálica condutora (prata/alumínio) no fundo que reflete e bloqueia ondas Wi-Fi como um escudo. Evite deixar espelhos no meio do caminho até outros cômodos.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🐠</span>
+            <div class="tip-details">
+              <span class="tip-title">Água Absorve o Sinal (Aquários e Canos)</span>
+              <span class="tip-desc">
+                A molécula de água absorve fortemente a energia de radiofrequência (~16 dB de perda). Aquários grandes ou colunas d'água formam barreiras que matam a cobertura.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🧊</span>
+            <div class="tip-details">
+              <span class="tip-title">Eletrodomésticos Metálicos Pesados</span>
+              <span class="tip-desc">
+                Geladeiras, fogões e lavadoras criam sombras profundas (&gt;25 dB de atenuação). Nunca posicione o roteador colado atrás de refrigeradores.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🏛️</span>
+            <div class="tip-details">
+              <span class="tip-title">Paredes de Concreto Armado</span>
+              <span class="tip-desc">
+                Concreto com vigas de aço causa atenuação severa (-15 dB em 2.4G e -25 dB em 5G). Nesses locais, prefira pontos de acesso adicionais ou rede Mesh conectada por cabo.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Bandas e Frequências (2.4GHz vs 5GHz vs Dual) -->
+        <div class="tips-section-card">
+          <div class="tips-section-title">
+            <span>📶</span> Escolha Inteligente de Frequência
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🌐</span>
+            <div class="tip-details">
+              <span class="tip-title">Banda 2.4 GHz: Longo Alcance</span>
+              <span class="tip-desc">
+                Ondas mais longas (~12 cm) transpõem paredes com menor perda. Ideal para dispositivos inteligentes (IoT) e locais distantes, embora com velocidade menor e mais vizinhos concorrendo nos mesmos canais.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🚀</span>
+            <div class="tip-details">
+              <span class="tip-title">Banda 5.0 GHz: Máxima Velocidade</span>
+              <span class="tip-desc">
+                Velocidade ultrarrápida com mais de 20 canais sem sobreposição e menor latência para jogos e streaming 4K. Sofre atenuação rápida por paredes sólidas.
+              </span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🔀</span>
+            <div class="tip-details">
+              <span class="tip-title">Modo Dual-Band: O Melhor dos Dois Mundos</span>
+              <span class="tip-desc">
+                Combina ambas as frequências. O simulador e os clientes modernos selecionam automaticamente o melhor caminho para cada ponto do ambiente.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Entendendo a Escala de Cores e Métricas (RSSI) -->
+        <div class="tips-section-card">
+          <div class="tips-section-title">
+            <span>📊</span> Níveis de Intensidade do Sinal (RSSI)
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🟢</span>
+            <div class="tip-details">
+              <span class="tip-title">&ge; -55 dBm: Excelente</span>
+              <span class="tip-desc">Velocidade máxima contratada, downloads instantâneos e latência mínima.</span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🟡</span>
+            <div class="tip-details">
+              <span class="tip-title">-55 a -67 dBm: Muito Bom</span>
+              <span class="tip-desc">Perfeito para chamadas de vídeo em HD, trabalho home office e jogos online estáveis.</span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🟠</span>
+            <div class="tip-details">
+              <span class="tip-title">-67 a -78 dBm: Instável / Limítrofe</span>
+              <span class="tip-desc">Navegação básica em sites e redes sociais. Pode apresentar buffering em vídeos.</span>
+            </div>
+          </div>
+
+          <div class="tip-item">
+            <span class="tip-icon">🔴</span>
+            <div class="tip-details">
+              <span class="tip-title">-78 a -88 dBm: Crítico / Fraco</span>
+              <span class="tip-desc">Área de sombra com quedas constantes. Ponto ideal para posicionar um nó Mesh intermediário.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Rodapé com Barra de Status -->
+    <footer id="footer-status">
+      <div id="status-info">Carregando ambiente...</div>
+      <div class="footer-actions">
+        <span class="badge-version">v2.0.1</span>
+        <a href="test.html" class="test-link" title="Abrir Smoke Test & Validador (🧪)" data-tooltip="Smoke Test / Validador (🧪)" target="_blank">
+          🧪
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal de Modelos Prontos (Templates) -->
+  <div id="modal-templates" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Modelos Prontos de Ambientes</h2>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Inicie um projeto totalmente limpo do zero ou selecione uma planta residencial pré-configurada:
+        </p>
+        <div class="template-grid">
+          <div class="template-card" data-load-template="blank">
+            <div class="template-card-title">📄 Projeto em Branco</div>
+            <div class="template-card-desc">
+              Espaço vazio sem paredes, objetos ou equipamentos. Ideal para desenhar e planejar sua própria planta livre totalmente do zero.
+            </div>
+          </div>
+          <div class="template-card" data-load-template="studio45">
+            <div class="template-card-title">🏢 Apartamento Studio (45 m²)</div>
+            <div class="template-card-desc">
+              Planta integrada com estrutura principal em concreto armado e divisórias em drywall. Demonstra atenuação acentuada e mapa de calor contrastado.
+            </div>
+          </div>
+          <div class="template-card" data-load-template="familiar85">
+            <div class="template-card-title">🏠 Apartamento Familiar (85 m²)</div>
+            <div class="template-card-desc">
+              3 dormitórios (1 suíte), estrutura mestra em concreto armado e divisórias em drywall. Ideal para observar áreas de sombra e perdas acentuadas de sinal.
+            </div>
+          </div>
+          <div class="template-card" data-load-template="casa130">
+            <div class="template-card-title">🏡 Casa Térrea com Varanda (130 m²)</div>
+            <div class="template-card-desc">
+              Área ampla com 3 quartos, paredes mestras em concreto armado e divisórias em drywall. Perfeito para simular redes Mesh e múltiplos APs.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts do Sistema em Ordem Modular Estrita (Zero-Build) -->
+  <script src="js/core/geometry.js"></script>
+  <script src="js/core/rf-engine.js"></script>
+  <script src="js/core/heatmap.js"></script>
+  <script src="js/state/templates.js"></script>
+  <script src="js/state/scene-state.js"></script>
+  <script src="js/ui/renderer.js"></script>
+  <script src="js/ui/interaction.js"></script>
+  <script src="js/ui/dialogs.js"></script>
+  <script src="js/ui/tips-panel.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
