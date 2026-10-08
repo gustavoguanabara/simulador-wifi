@@ -194,11 +194,17 @@
     let touchStartMidY = 0;
     let touchStartScrollL = 0;
     let touchStartScrollT = 0;
+    let isPinchingActive = false;
 
     if (mainViewport) {
       mainViewport.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
+        if (e.touches.length >= 2) {
           e.preventDefault();
+          isPinchingActive = true;
+          // Cancela e restaura imediatamente qualquer arraste em andamento na tela
+          if (interaction && typeof interaction.cancelDrag === 'function') {
+            interaction.cancelDrag(true);
+          }
           const t1 = e.touches[0];
           const t2 = e.touches[1];
           touchStartDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
@@ -211,13 +217,20 @@
       }, { passive: false });
 
       mainViewport.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2 && touchStartDist > 0) {
+        if (e.touches.length >= 2 && touchStartDist > 0) {
           e.preventDefault();
+          if (interaction && typeof interaction.cancelDrag === 'function') {
+            interaction.cancelDrag(true);
+          }
           const t1 = e.touches[0];
           const t2 = e.touches[1];
           const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-          const ratio = currentDist / touchStartDist;
-          setZoom(touchStartZoom * ratio, false);
+
+          // Calibração de sensibilidade: filtra micro-trepidações (deadband de 5px) para zoom mais estável
+          if (Math.abs(currentDist - touchStartDist) > 5) {
+            const ratio = currentDist / touchStartDist;
+            setZoom(touchStartZoom * ratio, false);
+          }
 
           const midX = (t1.clientX + t2.clientX) / 2;
           const midY = (t1.clientY + t2.clientY) / 2;
@@ -229,7 +242,21 @@
       mainViewport.addEventListener('touchend', (e) => {
         if (e.touches.length < 2) {
           touchStartDist = 0;
+          if (isPinchingActive) {
+            isPinchingActive = false;
+            if (interaction && typeof interaction.cancelDrag === 'function') {
+              interaction.cancelDrag(true);
+            }
+          }
           saveCurrentViewport();
+        }
+      });
+
+      mainViewport.addEventListener('touchcancel', () => {
+        touchStartDist = 0;
+        isPinchingActive = false;
+        if (interaction && typeof interaction.cancelDrag === 'function') {
+          interaction.cancelDrag(true);
         }
       });
     }

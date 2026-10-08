@@ -27,6 +27,8 @@
       this.clickedOnSelectedElectronic = false;
       this.initialPointerAngle = null;
       this.initialDeviceAngle = null;
+      this.isPinching = false;
+      this.pinchCooldownUntil = 0;
     }
 
     init(canvas) {
@@ -41,6 +43,37 @@
       c.addEventListener('pointerdown', (e) => this.onPointerDown(e));
       window.addEventListener('pointermove', (e) => this.onPointerMove(e));
       window.addEventListener('pointerup', (e) => this.onPointerUp(e));
+      window.addEventListener('pointercancel', () => this.cancelDrag(true));
+
+      // Supressão imediata de arraste de objetos ao detectar multitoque (pinça/pan no mobile)
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length >= 2) {
+          this.isPinching = true;
+          this.cancelDrag(true);
+        }
+      }, { passive: true, capture: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches.length >= 2) {
+          this.isPinching = true;
+          this.cancelDrag(true);
+        }
+      }, { passive: true, capture: true });
+
+      window.addEventListener('touchend', (e) => {
+        if (this.isPinching) {
+          if (!e.touches || e.touches.length === 0) {
+            this.isPinching = false;
+            this.pinchCooldownUntil = Date.now() + 350;
+          }
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchcancel', () => {
+        this.isPinching = false;
+        this.cancelDrag(true);
+        this.pinchCooldownUntil = Date.now() + 350;
+      }, { passive: true });
 
       // Atalho de Teclado: Tecla Delete / Backspace para excluir o objeto selecionado (paredes, portas, janelas, objetos e equipamentos)
       window.addEventListener('keydown', (e) => {
@@ -79,8 +112,15 @@
       const state = window.WifiSim.State;
       if (!state || !state.scene) return;
 
+      // Se o usuário estiver no meio de um gesto de pinça ou no período pós-pinça, ignora toques no canvas
+      if (this.isPinching || Date.now() < this.pinchCooldownUntil) {
+        this.cancelDrag(true);
+        return;
+      }
+
       // Se for multitoque secundário (ex: segundo dedo no pinch-to-zoom), ignora interação com objetos
-      if (e.pointerType === 'touch' && e.isPrimary === false) {
+      if (e.pointerType === 'touch' && (e.isPrimary === false || (e.touches && e.touches.length > 1))) {
+        this.cancelDrag(true);
         return;
       }
 
@@ -88,14 +128,14 @@
       const mPos = this.getMeterCoords(pxPos);
       const ppm = state.scene.dimensions.pixels_per_meter || 60;
 
-      // Tolerâncias ergonômicas de toque: mais generosas no mobile/touch para facilitar seleção com o dedo
+      // Tolerâncias ergonômicas de toque calibradas contra falsos toques no mobile
       const isTouch = (e.pointerType === 'touch') || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
-      const vertexHitRadius = isTouch ? 22 : 12;
-      const rotateHandleHitM = isTouch ? 0.38 : 0.25;
-      const hitMarginM = isTouch ? 0.24 : 0.15;
-      const wallHitMarginM = isTouch ? 0.28 : 0.15;
+      const vertexHitRadius = isTouch ? 20 : 12;
+      const rotateHandleHitM = isTouch ? 0.35 : 0.25;
+      const hitMarginM = isTouch ? 0.18 : 0.15;
+      const wallHitMarginM = isTouch ? 0.20 : 0.15;
 
-      this.pointerDownPos = { px: pxPos, m: mPos, time: Date.now() };
+      this.pointerDownPos = { px: pxPos, m: mPos, time: Date.now(), isTouch };
       this.hasMovedSignificantly = false;
 
       // 1. Ferramenta de desenho de parede
@@ -125,6 +165,7 @@
             this.isDragging = true;
             this.dragMode = 'rotate_device';
             this.dragTarget = dev;
+            this.dragStartPos = { mPos, initialDeg: dev.rotation_deg || 0 };
             this.activeSnap = null;
             // Registra ângulo inicial do ponteiro e do objeto para rotação suave e contínua sem saltos angulares
             this.initialPointerAngle = (Math.atan2(mPos.y - dev.position.y, mPos.x - dev.position.x) * 180) / Math.PI;
@@ -145,12 +186,14 @@
             this.isDragging = true;
             this.dragMode = 'vertex_p1';
             this.dragTarget = wall;
+            this.dragStartPos = { mPos, vertexPos: { x: wall.p1.x, y: wall.p1.y } };
             this.activeSnap = null;
             return;
           } else if (p2Dist <= vertexHitRadius) {
             this.isDragging = true;
             this.dragMode = 'vertex_p2';
             this.dragTarget = wall;
+            this.dragStartPos = { mPos, vertexPos: { x: wall.p2.x, y: wall.p2.y } };
             this.activeSnap = null;
             return;
           }
@@ -193,6 +236,7 @@
           this.isDragging = true;
           this.dragMode = 'move_device';
           this.dragTarget = dev;
+          this.dragStartPos = { mPos, devPos: { x: dev.position.x, y: dev.position.y } };
           this.dragOffset = { x: mPos.x - dev.position.x, y: mPos.y - dev.position.y };
           this.activeSnap = null;
           return;
@@ -223,6 +267,19 @@
 
     onPointerMove(e) {
       if (!this.isDragging && this.dragMode !== 'draw_wall') return;
+
+      // Se o usuário estiver fazendo gesto de pinça ou no cooldown pós-pinça, aborta imediatamente o drag
+      if (this.isPinching || Date.now() < this.pinchCooldownUntil) {
+        this.cancelDrag(true);
+        return;
+      }
+
+      // Se for touch secundário ou multitoque detectado, cancela qualquer drag de objeto
+      if (e.pointerType === 'touch' && (e.isPrimary === false || (e.touches && e.touches.length > 1))) {
+        this.cancelDrag(true);
+        return;
+      }
+
       const state = window.WifiSim.State;
       if (!state || !state.scene) return;
 
@@ -230,16 +287,20 @@
       const mPos = this.getMeterCoords(pxPos);
       const Geometry = window.WifiSim.Core.Geometry;
 
-      // Monitora distância percorrida para discernir clique estático de arraste
+      // Monitora distância percorrida para discernir clique estático / pinça de arraste deliberado
+      // No mouse 5px é suficiente. No touch, 18px evita tremor involuntário do dedo e falsos arrastes ao iniciar pinça
+      const isTouch = (e.pointerType === 'touch') || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
+      const dragThresholdPx = isTouch ? 18 : 5;
+
       if (this.pointerDownPos) {
         const pxDist = Math.hypot(pxPos.x - this.pointerDownPos.px.x, pxPos.y - this.pointerDownPos.px.y);
-        if (pxDist > 5) {
+        if (pxDist > dragThresholdPx) {
           this.hasMovedSignificantly = true;
         }
       }
 
-      // Se ainda não se moveu significativamente além do limiar de clique (5px), preserva posição original
-      if (!this.hasMovedSignificantly && this.dragMode === 'move_device') {
+      // Se ainda não se moveu significativamente além do limiar, preserva a posição original
+      if (!this.hasMovedSignificantly && (this.dragMode === 'move_device' || this.dragMode === 'wall_body' || this.dragMode === 'vertex_p1' || this.dragMode === 'vertex_p2' || this.dragMode === 'rotate_device')) {
         return;
       }
 
@@ -433,6 +494,53 @@
       this.clickedOnSelectedElectronic = false;
       this.initialPointerAngle = null;
       this.initialDeviceAngle = null;
+    }
+
+    /**
+     * Cancela qualquer operação de arraste ou rotação em andamento e restaura a posição original.
+     * Crucial para abortar falsos toques durante gestos de pinça (pinch-to-zoom) no celular.
+     */
+    cancelDrag(restoreOriginalPosition = true) {
+      if (this.isDragging && this.dragTarget && restoreOriginalPosition && this.dragStartPos) {
+        const state = window.WifiSim?.State;
+        if (this.dragMode === 'move_device' && this.dragStartPos.devPos) {
+          this.dragTarget.position.x = this.dragStartPos.devPos.x;
+          this.dragTarget.position.y = this.dragStartPos.devPos.y;
+          if (state) state.notify('device_moved');
+        } else if (this.dragMode === 'wall_body' && this.dragStartPos.p1 && this.dragStartPos.p2) {
+          this.dragTarget.p1.x = this.dragStartPos.p1.x;
+          this.dragTarget.p1.y = this.dragStartPos.p1.y;
+          this.dragTarget.p2.x = this.dragStartPos.p2.x;
+          this.dragTarget.p2.y = this.dragStartPos.p2.y;
+          if (state) state.notify('wall_modified');
+        } else if (this.dragMode === 'vertex_p1' && this.dragStartPos.vertexPos) {
+          this.dragTarget.p1.x = this.dragStartPos.vertexPos.x;
+          this.dragTarget.p1.y = this.dragStartPos.vertexPos.y;
+          if (state) state.notify('wall_modified');
+        } else if (this.dragMode === 'vertex_p2' && this.dragStartPos.vertexPos) {
+          this.dragTarget.p2.x = this.dragStartPos.vertexPos.x;
+          this.dragTarget.p2.y = this.dragStartPos.vertexPos.y;
+          if (state) state.notify('wall_modified');
+        } else if (this.dragMode === 'rotate_device' && this.dragStartPos.initialDeg !== undefined) {
+          this.dragTarget.rotation_deg = this.dragStartPos.initialDeg;
+          if (state) state.notify('device_moved');
+        }
+      }
+
+      this.isDragging = false;
+      this.dragMode = null;
+      this.dragTarget = null;
+      this.dragStartPos = null;
+      this.dragOffset = null;
+      this.activeSnap = null;
+      this.pointerDownPos = null;
+      this.hasMovedSignificantly = false;
+      this.clickedOnSelectedDoor = false;
+      this.clickedOnSelectedElectronic = false;
+      this.initialPointerAngle = null;
+      this.initialDeviceAngle = null;
+      this.pendingWallStart = null;
+      this.pendingWallCurrent = null;
     }
   }
 
