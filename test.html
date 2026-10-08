@@ -2,47 +2,56 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#121418">
   <title>Smoke Test & Healthcheck — Simulador Wi-Fi</title>
   <style>
     :root {
       --bg: #121418;
       --card-bg: #1a1e24;
+      --card-bg-elevated: #242932;
       --border: #2f3542;
+      --border-subtle: rgba(47, 53, 66, 0.6);
       --text: #f1f2f6;
       --muted: #a4b0be;
       --success: #2ecc71;
       --warning: #f1c40f;
       --danger: #e74c3c;
       --cyan: #00d2d3;
+      --primary: #0984e3;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, sans-serif;
-      padding: 30px 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 24px 16px;
+      padding-bottom: max(32px, env(safe-area-inset-bottom));
       display: flex;
       justify-content: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container {
       width: 100%;
-      max-width: 850px;
+      max-width: 960px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
 
+    /* Card de Cabeçalho */
     .header-card {
       background: linear-gradient(135deg, #1e272e, #1a1e24);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
+      border-radius: 14px;
+      padding: 20px 24px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 14px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
@@ -50,56 +59,117 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     h1 {
-      font-size: 1.4rem;
+      font-size: 1.35rem;
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
+      line-height: 1.3;
+    }
+
+    .badge-version {
+      font-size: 0.75rem;
+      color: var(--cyan);
+      border: 1px solid rgba(0, 210, 211, 0.35);
+      background: rgba(0, 210, 211, 0.08);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
     }
 
     .badge-status {
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
     }
 
     .badge-success {
       background: rgba(46, 204, 113, 0.15);
       color: var(--success);
-      border: 1px solid rgba(46, 204, 113, 0.3);
+      border: 1px solid rgba(46, 204, 113, 0.4);
+    }
+
+    .badge-danger {
+      background: rgba(231, 76, 60, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(231, 76, 60, 0.4);
     }
 
     .summary-text {
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       line-height: 1.5;
     }
 
-    .action-row {
-      margin-top: 10px;
+    /* Métricas / Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .stat-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 14px;
       display: flex;
-      gap: 12px;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-card.stat-pass .stat-value { color: var(--success); }
+    .stat-card.stat-fail .stat-value { color: var(--danger); }
+    .stat-card.stat-rate .stat-value { color: var(--cyan); }
+
+    /* Ações */
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      background: #242932;
+      background: var(--card-bg-elevated);
       border: 1px solid var(--border);
       color: var(--text);
       padding: 8px 16px;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 0.85rem;
       text-decoration: none;
       cursor: pointer;
       font-weight: 600;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
+      min-height: 40px;
     }
 
     .btn:hover {
@@ -111,19 +181,108 @@
     .btn-primary {
       background: #0984e3;
       border-color: #74b9ff;
+      color: #fff;
     }
 
     .btn-primary:hover {
       background: #00cec9;
+      border-color: #81ecec;
     }
 
+    /* Barra de Filtros e Busca */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      background: #242932;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .filter-chip:hover {
+      color: #fff;
+      border-color: var(--cyan);
+    }
+
+    .filter-chip.active {
+      background: rgba(0, 210, 211, 0.15);
+      border-color: var(--cyan);
+      color: #fff;
+    }
+
+    .filter-chip.chip-pass.active {
+      background: rgba(46, 204, 113, 0.18);
+      border-color: var(--success);
+      color: #2ecc71;
+    }
+
+    .filter-chip.chip-fail.active {
+      background: rgba(231, 76, 60, 0.18);
+      border-color: var(--danger);
+      color: #ff7675;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #121418;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--cyan);
+    }
+
+    .search-box input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .search-box input::placeholder {
+      color: #747d8c;
+    }
+
+    /* Tabela de Resultados (Desktop & Tablet) */
     .table-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
 
     table {
@@ -138,38 +297,254 @@
       padding: 12px 16px;
       color: var(--muted);
       font-weight: 600;
+      font-size: 0.8rem;
       border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
 
     td {
       padding: 12px 16px;
-      border-bottom: 1px solid rgba(47, 53, 66, 0.5);
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
     }
 
     tr:last-child td {
       border-bottom: none;
     }
 
+    tr.test-row:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
     .badge-test-pass {
       color: var(--success);
       font-weight: 700;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 5px;
+      white-space: nowrap;
     }
 
     .badge-test-fail {
       color: var(--danger);
       font-weight: 700;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 5px;
+      white-space: nowrap;
     }
 
     .code-preview {
-      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       color: var(--cyan);
       font-size: 0.8rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    /* ==========================================================================
+       RESPONSIVIDADE: TABLETS E SMARTPHONES (<= 720px)
+       Transformação graciosa da tabela em CARDS empilhados legíveis
+       ========================================================================== */
+    @media (max-width: 720px) {
+      body {
+        padding: 12px 10px;
+      }
+
+      .container {
+        gap: 12px;
+      }
+
+      .header-card {
+        padding: 16px;
+        border-radius: 12px;
+        gap: 12px;
+      }
+
+      .title-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      h1 {
+        font-size: 1.15rem;
+      }
+
+      .badge-status {
+        align-self: flex-start;
+        font-size: 0.72rem;
+        padding: 4px 10px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .stat-card {
+        padding: 8px 10px;
+      }
+
+      .stat-value {
+        font-size: 1.15rem;
+      }
+
+      .action-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .btn {
+        width: 100%;
+        min-height: 44px;
+        font-size: 0.88rem;
+      }
+
+      /* Filtros e Busca no Celular */
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .filter-group {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+
+      .filter-chip {
+        text-align: center;
+        padding: 8px 4px;
+        font-size: 0.74rem;
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .search-box {
+        max-width: 100%;
+        min-width: 0;
+        min-height: 42px;
+      }
+
+      /* TRANSFORMAÇÃO DA TABELA EM CARDS INDIVIDUAIS */
+      .table-card {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none; /* Cabeçalho rígido ocultado no celular */
+      }
+
+      tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      tr.test-row {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+          "num status"
+          "name name"
+          "cond cond"
+          "val val";
+        gap: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+        transition: transform 0.15s ease, border-color 0.2s ease;
+      }
+
+      tr.test-row:active {
+        transform: scale(0.99);
+      }
+
+      tr.test-row-pass {
+        border-left: 5px solid var(--success);
+      }
+
+      tr.test-row-fail {
+        border-left: 5px solid var(--danger);
+        background: rgba(231, 76, 60, 0.08);
+      }
+
+      td {
+        padding: 0 !important;
+        border: none !important;
+      }
+
+      .cell-num {
+        grid-area: num;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+      }
+
+      .cell-status {
+        grid-area: status;
+        justify-self: end;
+      }
+
+      .cell-name {
+        grid-area: name;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1.35;
+        margin-top: 2px;
+      }
+
+      .cell-condition {
+        grid-area: cond;
+        font-size: 0.8rem;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 8px 10px;
+        border-radius: 8px;
+        word-break: break-word;
+        line-height: 1.4;
+      }
+
+      .cell-condition::before {
+        content: "Critério: ";
+        color: var(--muted);
+        font-weight: 600;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      .cell-value {
+        grid-area: val;
+        font-size: 0.82rem;
+        color: #dfe4ea;
+        word-break: break-word;
+        line-height: 1.4;
+        margin-top: 2px;
+      }
+
+      .cell-value::before {
+        content: "Resultado: ";
+        color: var(--muted);
+        font-weight: 600;
+      }
     }
   </style>
 </head>
@@ -177,15 +552,49 @@
   <div class="container">
     <div class="header-card">
       <div class="title-row">
-        <h1><span>🧪</span> Smoke Test & Healthcheck do Ambiente <span style="font-size: 0.75rem; color: var(--cyan); border: 1px solid rgba(0, 210, 211, 0.3); padding: 2px 8px; border-radius: 12px; font-weight: 600;">v2.0.1</span></h1>
+        <h1><span>🧪</span> Smoke Test & Healthcheck <span class="badge-version">v2.0.1</span></h1>
         <span id="global-badge" class="badge-status badge-success">Executando...</span>
       </div>
       <p class="summary-text">
         Diagnóstico automatizado de sanidade do <strong>Simulador Wi-Fi</strong>. Valida a disponibilidade dos runtimes nativos, APIs gráficas do HTML5 Canvas e a precisão das equações matemáticas de física de rádio (FSPL e atenuação de paredes) estabelecidas no TRD.
       </p>
+
+      <!-- Grade de Métricas / Resumo -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Total</span>
+          <span class="stat-value" id="stat-total">--</span>
+        </div>
+        <div class="stat-card stat-pass">
+          <span class="stat-label">Aprovados</span>
+          <span class="stat-value" id="stat-pass">--</span>
+        </div>
+        <div class="stat-card stat-fail">
+          <span class="stat-label">Falhas</span>
+          <span class="stat-value" id="stat-fail">--</span>
+        </div>
+        <div class="stat-card stat-rate">
+          <span class="stat-label">Conformidade</span>
+          <span class="stat-value" id="stat-rate">--</span>
+        </div>
+      </div>
+
       <div class="action-row">
         <a href="index.html" class="btn btn-primary">🚀 Abrir Simulador Wi-Fi</a>
         <button id="btn-rerun" class="btn">🔄 Reexecutar Testes</button>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros e Busca -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <button class="filter-chip active" data-filter="all">Todos (<span id="count-all">0</span>)</button>
+        <button class="filter-chip chip-pass" data-filter="pass">✅ Passam (<span id="count-pass">0</span>)</button>
+        <button class="filter-chip chip-fail" data-filter="fail">❌ Falhas (<span id="count-fail">0</span>)</button>
+      </div>
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="test-search" placeholder="Filtrar por nome ou critério..." aria-label="Filtrar testes">
       </div>
     </div>
 
@@ -1098,6 +1507,28 @@
         }
       ];
 
+      let currentFilter = 'all';
+      let searchQuery = '';
+
+      function applyFilters() {
+        const rows = document.querySelectorAll('#test-results-body tr');
+        rows.forEach(tr => {
+          const status = tr.getAttribute('data-status');
+          const text = tr.textContent.toLowerCase();
+
+          let matchesFilter = true;
+          if (currentFilter === 'pass') matchesFilter = (status === 'pass');
+          else if (currentFilter === 'fail') matchesFilter = (status === 'fail');
+
+          let matchesSearch = true;
+          if (searchQuery) {
+            matchesSearch = text.includes(searchQuery);
+          }
+
+          tr.style.display = (matchesFilter && matchesSearch) ? '' : 'none';
+        });
+      }
+
       function executeSuite() {
         const tbody = document.getElementById('test-results-body');
         tbody.innerHTML = '';
@@ -1108,12 +1539,14 @@
           if (res.pass) totalPass++;
 
           const tr = document.createElement('tr');
+          tr.className = res.pass ? 'test-row test-row-pass' : 'test-row test-row-fail';
+          tr.setAttribute('data-status', res.pass ? 'pass' : 'fail');
           tr.innerHTML = `
-            <td><strong>${idx + 1}</strong></td>
-            <td><strong>${t.name}</strong></td>
-            <td class="code-preview">${res.condition}</td>
-            <td>${res.value}</td>
-            <td>
+            <td class="cell-num"><strong>#${idx + 1}</strong></td>
+            <td class="cell-name"><strong>${t.name}</strong></td>
+            <td class="cell-condition code-preview">${res.condition}</td>
+            <td class="cell-value">${res.value}</td>
+            <td class="cell-status">
               ${res.pass 
                 ? '<span class="badge-test-pass">✅ PASS</span>' 
                 : '<span class="badge-test-fail">❌ FAIL</span>'}
@@ -1122,14 +1555,57 @@
           tbody.appendChild(tr);
         });
 
+        const totalFail = tests.length - totalPass;
+        const passRate = Math.round((totalPass / tests.length) * 100);
+
+        // Atualiza cards de métricas
+        const elTotal = document.getElementById('stat-total');
+        const elPass = document.getElementById('stat-pass');
+        const elFail = document.getElementById('stat-fail');
+        const elRate = document.getElementById('stat-rate');
+        if (elTotal) elTotal.textContent = tests.length;
+        if (elPass) elPass.textContent = totalPass;
+        if (elFail) elFail.textContent = totalFail;
+        if (elRate) elRate.textContent = `${passRate}%`;
+
+        // Atualiza contadores nos chips de filtro
+        const cAll = document.getElementById('count-all');
+        const cPass = document.getElementById('count-pass');
+        const cFail = document.getElementById('count-fail');
+        if (cAll) cAll.textContent = tests.length;
+        if (cPass) cPass.textContent = totalPass;
+        if (cFail) cFail.textContent = totalFail;
+
+        // Atualiza badge global de status
         const globalBadge = document.getElementById('global-badge');
         if (totalPass === tests.length) {
           globalBadge.className = 'badge-status badge-success';
           globalBadge.textContent = `100% OPERACIONAL (${totalPass}/${tests.length} TESTES OK)`;
         } else {
           globalBadge.className = 'badge-status badge-danger';
-          globalBadge.textContent = `${totalPass}/${tests.length} TESTES OK`;
+          globalBadge.textContent = `${totalPass}/${tests.length} TESTES OK (${totalFail} FALHAS)`;
         }
+
+        applyFilters();
+      }
+
+      // Eventos de Filtro por Chip
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          currentFilter = chip.getAttribute('data-filter') || 'all';
+          applyFilters();
+        });
+      });
+
+      // Eventos de Busca Dinâmica
+      const searchInput = document.getElementById('test-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          searchQuery = e.target.value.trim().toLowerCase();
+          applyFilters();
+        });
       }
 
       document.getElementById('btn-rerun').addEventListener('click', executeSuite);
