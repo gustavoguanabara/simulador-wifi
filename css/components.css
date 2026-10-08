@@ -1,0 +1,1230 @@
+/* ==========================================================================
+   Simulador Wi-Fi - Componentes Visuais (Buttons, Toolbars, Modals, Cards)
+   Vanilla CSS3 - Zero Frameworks
+   ========================================================================== */
+
+/* Grupo de Ações na Barra de Ferramentas */
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: visible;
+}
+
+/* Botões do Sistema */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  background-color: #2f3542;
+  border-color: #57606f;
+  color: #ffffff;
+}
+
+.btn.active {
+  background-color: rgba(0, 210, 211, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.btn-icon {
+  padding: 6px 10px;
+  min-width: 38px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+}
+
+/* ==========================================================================
+   Tooltips Flutuantes no Hover (Passe o Mouse)
+   ========================================================================== */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background-color: #1a1e24;
+  color: #f1f2f6;
+  border: 1px solid var(--accent-cyan);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  z-index: 1000;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 5px 6px 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--accent-cyan) transparent;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s;
+  z-index: 1001;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Desativa tooltips flutuantes em telas touchscreen para não bloquear cliques */
+@media (hover: none) and (pointer: coarse) {
+  [data-tooltip]::before,
+  [data-tooltip]::after {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   Seletor Segmentado de Frequência do Roteador Principal
+   ========================================================================== */
+.freq-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-primary);
+  padding: 2px 4px 2px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.freq-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  letter-spacing: 0.5px;
+}
+
+.segmented-control {
+  display: flex;
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.seg-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.seg-btn:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.seg-btn.active {
+  background-color: rgba(0, 210, 211, 0.18);
+  color: var(--accent-cyan);
+  border-color: rgba(0, 210, 211, 0.4);
+  box-shadow: 0 0 10px rgba(0, 210, 211, 0.2);
+}
+
+.btn-primary {
+  background-color: #0984e3;
+  border-color: #74b9ff;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #00cec9;
+  border-color: #81ecec;
+}
+
+.btn-danger {
+  background-color: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.4);
+  color: #ff7675;
+}
+
+.btn-danger:hover {
+  background-color: #d63031;
+  color: #ffffff;
+}
+
+/* Selects */
+.select-input {
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.select-input:focus {
+  border-color: var(--accent-cyan);
+}
+
+/* Separadores Verticais */
+.divider-vertical {
+  width: 1px;
+  height: 24px;
+  background-color: var(--border-color);
+  margin: 0 4px;
+}
+
+/* Backdrop Escuro para Dropdowns no Mobile */
+.dropdown-backdrop {
+  display: none;
+}
+
+/* ==========================================================================
+   Dropdowns e Popovers da Barra Superior (Construir / Adicionar)
+   ========================================================================== */
+.dropdown-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.dropdown-toggle .dropdown-arrow {
+  font-size: 0.7rem;
+  margin-left: 2px;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-wrapper.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+  z-index: 100;
+  display: none;
+  min-width: 290px;
+  padding: 8px;
+  backdrop-filter: blur(8px);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.dropdown-popover.active {
+  display: block;
+  animation: dropdownAnim 0.15s ease-out;
+}
+
+@keyframes dropdownAnim {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-popover-wide {
+  min-width: 580px;
+  max-width: min(620px, calc(100vw - 32px));
+}
+
+.dropdown-grid-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dropdown-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  letter-spacing: 0.5px;
+  padding: 6px 8px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-tertiary);
+  border-color: rgba(0, 210, 211, 0.35);
+  color: #ffffff;
+}
+
+.dropdown-item:hover .item-name {
+  color: var(--accent-cyan);
+}
+
+.item-icon {
+  font-size: 1.15rem;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.item-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f1f2f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Modais
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 650px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #ffffff;
+}
+
+.modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Cards de Templates */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.template-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.template-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 210, 211, 0.15);
+}
+
+.template-card-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.template-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Painel Lateral de Dicas e Boas Práticas Wi-Fi (Side Drawer)
+   ========================================================================== */
+
+/* Aba Flutuante de Acesso Rápido na borda direita do viewport */
+.tips-floating-tab {
+  position: fixed;
+  top: 76px;
+  right: 0;
+  z-index: 40;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  color: var(--accent-yellow);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: -4px 6px 16px rgba(0, 0, 0, 0.45);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tips-floating-tab:hover {
+  background-color: var(--bg-tertiary);
+  color: #ffffff;
+  padding-left: 16px;
+  border-color: var(--accent-yellow);
+}
+
+.tips-floating-tab.drawer-open {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Container Principal do Drawer Lateral */
+.tips-drawer {
+  position: fixed;
+  top: 56px; /* abaixo da barra superior */
+  bottom: 32px; /* acima do rodapé de status */
+  right: 0;
+  width: 420px;
+  max-width: calc(100vw - 20px);
+  background-color: rgba(22, 26, 32, 0.97);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-left: 1px solid var(--border-color);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.65);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+  overflow: hidden;
+}
+
+.tips-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+/* Header do Painel de Dicas */
+.tips-header {
+  padding: 14px 18px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.tips-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tips-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tips-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.tips-close-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.tips-close-btn:hover {
+  background-color: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.4);
+  color: #ff7675;
+}
+
+/* Conteúdo Rolável do Painel */
+.tips-content {
+  flex: 1;
+  padding: 16px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #3a4250 transparent;
+}
+
+.tips-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tips-content::-webkit-scrollbar-thumb {
+  background-color: #3a4250;
+  border-radius: 4px;
+}
+
+/* Card de Diagnóstico Dinâmico ao Vivo */
+.tips-live-card {
+  background: linear-gradient(135deg, rgba(0, 210, 211, 0.08), rgba(26, 30, 36, 0.9));
+  border: 1px solid rgba(0, 210, 211, 0.35);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.tips-live-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.live-badge-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulseAnim 2s infinite ease-in-out;
+}
+
+@keyframes pulseAnim {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.tips-live-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.live-alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.live-alert-warning {
+  background-color: rgba(241, 196, 15, 0.12);
+  border: 1px solid rgba(241, 196, 15, 0.3);
+  color: #f1f2f6;
+}
+
+.live-alert-danger {
+  background-color: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  color: #ffb8b8;
+}
+
+.live-alert-info {
+  background-color: rgba(0, 210, 211, 0.1);
+  border: 1px solid rgba(0, 210, 211, 0.25);
+  color: #f1f2f6;
+}
+
+.live-alert-success {
+  background-color: rgba(46, 204, 113, 0.1);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+  color: #d1f2db;
+}
+
+.live-alert-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Cards de Seções Temáticas de Dicas */
+.tips-section-card {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tips-section-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  background-color: rgba(26, 30, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 7px;
+  transition: all 0.2s ease;
+}
+
+.tip-item:hover {
+  background-color: rgba(26, 30, 36, 0.95);
+  border-color: rgba(0, 210, 211, 0.3);
+  transform: translateX(-2px);
+}
+
+.tip-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.tip-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tip-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f1f2f6;
+}
+
+.tip-desc {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.tip-highlight {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.tip-warning {
+  color: var(--accent-yellow);
+  font-weight: 600;
+}
+
+.tip-danger {
+  color: #ff7675;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Controles Flutuantes de Zoom e Enquadramento (Fit-to-Screen)
+   ========================================================================== */
+.zoom-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(26, 30, 36, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  user-select: none;
+}
+
+.zoom-btn {
+  height: 32px;
+  min-width: 32px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.zoom-btn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: #57606f;
+  color: #ffffff;
+}
+
+.zoom-val-btn {
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--accent-cyan);
+  min-width: 48px;
+  padding: 4px 6px;
+}
+
+.zoom-val-btn:hover {
+  background-color: rgba(0, 210, 211, 0.15);
+  border-color: var(--accent-cyan);
+}
+
+.btn-fit {
+  color: var(--accent-cyan);
+}
+
+.btn-fit:hover {
+  background-color: rgba(0, 210, 211, 0.18);
+  border-color: var(--accent-cyan);
+}
+
+/* ==========================================================================
+   Barra Flutuante de Ações Rápidas (Item Selecionado)
+   ========================================================================== */
+.selection-toolbar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 92;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(26, 30, 36, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  max-width: calc(100vw - 48px);
+}
+
+.selection-toolbar.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(14px);
+}
+
+.selection-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.sel-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.sel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sel-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.sel-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.sel-material-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-primary);
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-mat {
+  min-width: 30px;
+  height: 28px;
+  padding: 2px;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-mat:hover {
+  background-color: var(--bg-tertiary);
+  border-color: #57606f;
+}
+
+.btn-mat.active {
+  background-color: rgba(0, 210, 211, 0.2);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(0, 210, 211, 0.3);
+}
+
+.btn-action {
+  height: 30px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.btn-close-sel {
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.btn-close-sel:hover {
+  color: #ffffff;
+}
+
+.btn-power-on {
+  background-color: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.4);
+  color: #ff7675;
+}
+
+.btn-power-on:hover {
+  background-color: rgba(231, 76, 60, 0.28);
+  border-color: #ff7675;
+}
+
+.btn-power-off {
+  background-color: rgba(46, 204, 113, 0.15);
+  border-color: rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+}
+
+.btn-power-off:hover {
+  background-color: rgba(46, 204, 113, 0.28);
+  border-color: #2ecc71;
+}
+
+.btn-power-disabled {
+  background-color: rgba(231, 76, 60, 0.1) !important;
+  border-color: rgba(231, 76, 60, 0.3) !important;
+  color: #ff7675 !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
+
+.btn-power-disabled:hover {
+  background-color: rgba(231, 76, 60, 0.18) !important;
+  border-color: #ff7675 !important;
+}
+
+/* ==========================================================================
+   Responsividade dos Componentes: Tablets (<= 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .dropdown-popover-wide {
+    min-width: 320px;
+  }
+}
+
+/* ==========================================================================
+   Responsividade dos Componentes: Celulares e Telas Pequenas (<= 720px)
+   ========================================================================== */
+@media (max-width: 720px) {
+  /* Botões e Itens com Área de Toque Otimizada (Touch Targets) */
+  .btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-height: 38px;
+  }
+
+  .btn-icon {
+    min-width: 38px;
+    height: 38px;
+    padding: 6px;
+    font-size: 1.1rem;
+  }
+
+  /* Backdrop Escuro para Fechar Gaveta com 1 Toque Fora */
+  .dropdown-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 95;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .dropdown-backdrop.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Dropdowns no Celular: Alinhados logo abaixo do cabeçalho de duas linhas com rolagem vertical */
+  .dropdown-popover {
+    position: fixed !important;
+    top: calc(104px + env(safe-area-inset-top, 0px)) !important;
+    bottom: auto !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    max-height: calc(100vh - 116px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    max-height: calc(100dvh - 116px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--border-color) !important;
+    z-index: 110 !important;
+    padding: 12px 14px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    transform: translateY(-8px);
+    opacity: 0;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  }
+
+  .dropdown-popover.active {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+    animation: none;
+  }
+
+  .dropdown-popover::before {
+    display: none !important;
+  }
+
+  /* Grid de 2 colunas converte-se em coluna única confortável no celular */
+  .dropdown-grid-columns {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .dropdown-col {
+    gap: 4px;
+  }
+
+  .dropdown-item {
+    padding: 10px 12px;
+    min-height: 48px;
+    border-radius: 8px;
+  }
+
+  .item-icon {
+    font-size: 1.25rem;
+    width: 28px;
+  }
+
+  .item-name {
+    font-size: 0.84rem;
+  }
+
+  .item-meta {
+    font-size: 0.72rem;
+  }
+
+  /* Modais no Celular */
+  .modal-card {
+    width: 95%;
+    max-height: 90vh;
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+
+  .modal-body {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .template-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .template-card {
+    padding: 12px;
+  }
+
+  /* Painel de Dicas no Celular: Ocupa a tela inteira em modo App */
+  .tips-drawer {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 0;
+    border-left: none;
+    z-index: 200;
+  }
+
+  .tips-header {
+    padding: 14px 16px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  }
+
+  .tips-content {
+    padding: 14px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .tips-floating-tab {
+    display: none;
+  }
+
+  /* Controles Flutuantes de Zoom no Mobile: Canto Superior Esquerdo */
+  .zoom-controls {
+    top: 10px;
+    bottom: auto;
+    left: 10px;
+    padding: 3px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  }
+
+  .zoom-btn {
+    height: 32px;
+    min-width: 32px;
+    font-size: 0.9rem;
+  }
+
+  .zoom-val-btn {
+    min-width: 42px;
+    font-size: 0.72rem;
+  }
+
+  /* Barra Flutuante de Ações Rápidas no Mobile: Fixa a 10px da borda inferior da tela */
+  .selection-toolbar {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    max-width: calc(100vw - 20px);
+    width: auto;
+    padding: 8px 10px;
+    border-radius: 10px;
+    justify-content: space-between;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .selection-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .selection-toolbar.hidden {
+    transform: translateY(16px);
+  }
+
+  .selection-badge {
+    padding-right: 8px;
+  }
+
+  .sel-sub {
+    display: none;
+  }
+
+  .btn-action {
+    height: 34px;
+    padding: 4px 8px;
+    font-size: 0.76rem;
+  }
+}
