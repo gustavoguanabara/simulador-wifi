@@ -627,6 +627,17 @@
             }
 
             if (loadedScene) {
+              if (loadedScene.dimensions) {
+                if (typeof loadedScene.dimensions.width_m !== 'number' && typeof loadedScene.dimensions.width === 'number') {
+                  loadedScene.dimensions.width_m = loadedScene.dimensions.width;
+                }
+                if (typeof loadedScene.dimensions.height_m !== 'number' && typeof loadedScene.dimensions.height === 'number') {
+                  loadedScene.dimensions.height_m = loadedScene.dimensions.height;
+                }
+                if (typeof loadedScene.dimensions.pixels_per_meter !== 'number') {
+                  loadedScene.dimensions.pixels_per_meter = 60;
+                }
+              }
               this.scene = loadedScene;
               this.viewportState = loadedViewport;
               if (loadedFreq) this.activeFrequencyMode = loadedFreq;

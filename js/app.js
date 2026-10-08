@@ -306,60 +306,69 @@
       });
     }
 
-    // Barra de status inferior
+    // Barra de status inferior (atualização resiliente e defensiva)
     function updateStatusBar() {
-      const statusEl = document.getElementById('status-info');
-      if (!statusEl || !state || !state.scene) return;
+      try {
+        const statusEl = document.getElementById('status-info');
+        if (!statusEl || !state || !state.scene) return;
 
-      const sc = state.scene;
-      const txCount = (sc.devices || []).filter((d) => d.category === 'transmitter').length;
-      const rxCount = (sc.devices || []).filter((d) => d.category === 'receiver').length;
-      const obsCount = (sc.devices || []).filter((d) => ['furniture', 'obstacle', 'noise_source'].includes(d.category)).length;
-      const wallCount = (sc.walls || []).length;
+        const sc = state.scene;
+        const txCount = (sc.devices || []).filter((d) => d.category === 'transmitter').length;
+        const rxCount = (sc.devices || []).filter((d) => d.category === 'receiver').length;
+        const obsCount = (sc.devices || []).filter((d) => ['furniture', 'obstacle', 'noise_source'].includes(d.category)).length;
+        const wallCount = (sc.walls || []).length;
 
-      let selectionText = 'Nenhum item selecionado';
-      if (state.selectedItem) {
-        if (state.selectedItem.type === 'wall') {
-          const w = sc.walls.find((wall) => wall.id === state.selectedItem.id);
-          const matName = w ? (window.WifiSim.Core.RF.MATERIALS[w.material]?.name || w.material) : 'Parede';
-          selectionText = `Parede: ${matName}`;
-        } else if (state.selectedItem.type === 'device') {
-          const dev = sc.devices.find((d) => d.id === state.selectedItem.id);
-          if (dev && dev.type === 'door') {
-            const isOutward = dev.swing_direction === 'outward' || dev.flip_swing === true;
-            const isRight = dev.hinge_side === 'right';
-            const dirStr = isOutward ? 'para fora' : 'para dentro';
-            const sideStr = isRight ? 'dobradiça à direita' : 'dobradiça à esquerda';
-            selectionText = `Porta: ${dev.name} [${dirStr} • ${sideStr} 🚪] (clique para alternar)`;
-          } else if (dev && state.isElectronicDevice && state.isElectronicDevice(dev)) {
-            const isPowered = state.isDevicePowered ? state.isDevicePowered(dev) : true;
-            let powerBadge = isPowered ? '🟢 LIGADO' : '⚪ DESLIGADO';
-            if (state.isRepeaterDevice && state.isRepeaterDevice(dev) && !state.hasActiveMainRouter()) {
-              powerBadge = '⚠️ INOPERANTE (SEM ROTEADOR)';
+        let selectionText = 'Nenhum item selecionado';
+        if (state.selectedItem) {
+          if (state.selectedItem.type === 'wall') {
+            const w = (sc.walls || []).find((wall) => wall.id === state.selectedItem.id);
+            const matName = w ? (window.WifiSim.Core.RF?.MATERIALS?.[w.material]?.name || w.material) : 'Parede';
+            selectionText = `Parede: ${matName}`;
+          } else if (state.selectedItem.type === 'device') {
+            const dev = (sc.devices || []).find((d) => d.id === state.selectedItem.id);
+            if (dev && dev.type === 'door') {
+              const isOutward = dev.swing_direction === 'outward' || dev.flip_swing === true;
+              const isRight = dev.hinge_side === 'right';
+              const dirStr = isOutward ? 'para fora' : 'para dentro';
+              const sideStr = isRight ? 'dobradiça à direita' : 'dobradiça à esquerda';
+              selectionText = `Porta: ${dev.name} [${dirStr} • ${sideStr} 🚪] (clique para alternar)`;
+            } else if (dev && state.isElectronicDevice && state.isElectronicDevice(dev)) {
+              const isPowered = state.isDevicePowered ? state.isDevicePowered(dev) : true;
+              let powerBadge = isPowered ? '🟢 LIGADO' : '⚪ DESLIGADO';
+              if (state.isRepeaterDevice && state.isRepeaterDevice(dev) && !state.hasActiveMainRouter()) {
+                powerBadge = '⚠️ INOPERANTE (SEM ROTEADOR)';
+              }
+              selectionText = `${dev.name} [${powerBadge}] (clique novamente para alternar)`;
+            } else {
+              selectionText = dev ? `Objeto: ${dev.name}` : 'Dispositivo selecionado';
             }
-            selectionText = `${dev.name} [${powerBadge}] (clique novamente para alternar)`;
-          } else {
-            selectionText = dev ? `Objeto: ${dev.name}` : 'Dispositivo selecionado';
           }
         }
-      }
 
-      statusEl.innerHTML = `
-        <span>📐 <strong>${sc.name}</strong> (${sc.dimensions.width_m}m × ${sc.dimensions.height_m}m)</span>
-        <span>📡 <strong>${txCount}</strong> APs | 💻 <strong>${rxCount}</strong> Clientes | 🛋️ <strong>${obsCount}</strong> Objetos/Móveis</span>
-        <span>🧱 <strong>${wallCount}</strong> Paredes</span>
-        <span>🎯 ${selectionText}</span>
-      `;
+        const sceneName = sc.name || 'Ambiente';
+        const widthM = (sc.dimensions && (sc.dimensions.width_m ?? sc.dimensions.width)) || 8;
+        const heightM = (sc.dimensions && (sc.dimensions.height_m ?? sc.dimensions.height)) || 6;
+
+        statusEl.innerHTML = `
+          <span>📐 <strong>${sceneName}</strong> (${widthM}m × ${heightM}m)</span>
+          <span>📡 <strong>${txCount}</strong> APs | 💻 <strong>${rxCount}</strong> Clientes | 🛋️ <strong>${obsCount}</strong> Objetos/Móveis</span>
+          <span>🧱 <strong>${wallCount}</strong> Paredes</span>
+          <span>🎯 ${selectionText}</span>
+        `;
+      } catch (err) {
+        console.warn('[WifiSim] Erro ao atualizar barra de status:', err);
+      }
     }
 
-    bindUIButtons();
-    updateStatusBar();
-    console.log('✅ [WifiSim] Sistema inicializado com sucesso.');
-  }
+    // Declaração no escopo de initApp (preenchida na inicialização de bindUIButtons)
+    let updateSelectionToolbar = function () {};
 
-  function bindUIButtons() {
-    const state = window.WifiSim.State;
-    const dialogs = window.WifiSim.UI.Dialogs;
+    // Atualiza a barra de status imediatamente logo após inicializar estado e canvas
+    updateStatusBar();
+
+    function bindUIButtons() {
+      const state = window.WifiSim.State;
+      const dialogs = window.WifiSim.UI.Dialogs;
 
     // Elementos dos Dropdowns e Menus Móveis
     const btnToolSelect = document.getElementById('btn-tool-select');
@@ -1010,64 +1019,76 @@
 
     // Inicializa a barra de seleção no estado atual
     updateSelectionToolbar();
+  }
 
-    // Inicialização da visualização da tela:
-    // Se a aplicação estiver restaurando uma sessão anterior salva no localStorage,
-    // ela preserva e restaura com máxima fidelidade o mapa, objetos, nível de zoom e a posição de visualização.
-    // Caso seja a primeira execução ou uma redefinição explícita de template, executa o enquadramento dinâmico (fitToScreen).
-    function setupInitialViewport() {
-      resizeCanvases();
-      if (state && state.isRestoredSession && state.viewportState) {
-        restoreSavedViewportPosition();
-      } else {
-        fitToScreen();
-      }
+  // Vincula todos os botões e elementos interativos da interface
+  bindUIButtons();
+  updateStatusBar();
+
+  // Inicialização da visualização da tela:
+  // Se a aplicação estiver restaurando uma sessão anterior salva no localStorage,
+  // ela preserva e restaura com máxima fidelidade o mapa, objetos, nível de zoom e a posição de visualização.
+  // Caso seja a primeira execução ou uma redefinição explícita de template, executa o enquadramento dinâmico (fitToScreen).
+  function setupInitialViewport() {
+    resizeCanvases();
+    if (state && state.isRestoredSession && state.viewportState) {
+      restoreSavedViewportPosition();
+    } else {
+      fitToScreen();
     }
+    updateStatusBar();
+  }
 
-    // Execuções em cascata cobrindo o ciclo de renderização do DOM
-    requestAnimationFrame(setupInitialViewport);
-    setTimeout(setupInitialViewport, 50);
-    setTimeout(() => {
-      if (state && state.isRestoredSession && state.viewportState) {
-        restoreSavedViewportPosition();
-      }
-    }, 150);
-    setTimeout(() => {
-      if (state && state.isRestoredSession && state.viewportState) {
-        restoreSavedViewportPosition();
-      }
-    }, 350);
+  // Execuções em cascata cobrindo o ciclo de renderização do DOM
+  requestAnimationFrame(setupInitialViewport);
+  setTimeout(setupInitialViewport, 50);
+  setTimeout(() => {
+    if (state && state.isRestoredSession && state.viewportState) {
+      restoreSavedViewportPosition();
+    }
+    updateStatusBar();
+  }, 150);
+  setTimeout(() => {
+    if (state && state.isRestoredSession && state.viewportState) {
+      restoreSavedViewportPosition();
+    }
+    updateStatusBar();
+  }, 350);
 
-    // ResizeObserver para garantir o enquadramento ou restauração ideal no instante em que a viewport recebe dimensões reais
-    if (window.ResizeObserver && mainViewport) {
-      let initialAutoFitDone = false;
-      const ro = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          const cr = entry.contentRect;
-          if (cr.width > 50 && cr.height > 50) {
-            if (!initialAutoFitDone) {
-              initialAutoFitDone = true;
-              setupInitialViewport();
-              setTimeout(() => {
-                if (state && state.isRestoredSession && state.viewportState) {
-                  restoreSavedViewportPosition();
-                }
-              }, 100);
-            }
+  // ResizeObserver para garantir o enquadramento ou restauração ideal no instante em que a viewport recebe dimensões reais
+  if (window.ResizeObserver && mainViewport) {
+    let initialAutoFitDone = false;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const cr = entry.contentRect;
+        if (cr.width > 50 && cr.height > 50) {
+          if (!initialAutoFitDone) {
+            initialAutoFitDone = true;
+            setupInitialViewport();
+            setTimeout(() => {
+              if (state && state.isRestoredSession && state.viewportState) {
+                restoreSavedViewportPosition();
+              }
+              updateStatusBar();
+            }, 100);
           }
         }
-      });
-      ro.observe(mainViewport);
-    }
-
-    if (document.readyState === 'complete') {
-      setTimeout(setupInitialViewport, 50);
-    } else {
-      window.addEventListener('load', () => {
-        setTimeout(setupInitialViewport, 60);
-      }, { once: true });
-    }
+      }
+    });
+    ro.observe(mainViewport);
   }
+
+  if (document.readyState === 'complete') {
+    setTimeout(setupInitialViewport, 50);
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(setupInitialViewport, 60);
+    }, { once: true });
+  }
+
+  updateStatusBar();
+  console.log('✅ [WifiSim] Sistema inicializado com sucesso.');
+}
 
   // Executa ao carregar o DOM
   if (document.readyState === 'loading') {
