@@ -546,6 +546,17 @@
         font-weight: 600;
       }
     }
+
+    /* Blindagem: O painel de dicas e aba flutuante pertencem exclusivamente ao index.html */
+    #tips-drawer, .tips-drawer, #btn-floating-tips, .tips-floating-tab {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      opacity: 0 !important;
+      overflow: hidden !important;
+    }
   </style>
 </head>
 <body>
@@ -1026,15 +1037,18 @@
             const state = window.WifiSim.State;
             state.loadTemplate('studio45');
 
-            // Cria elementos simulados no DOM de teste se não existirem
+            // Cria elementos simulados isolados no DOM de teste (ocultos)
             let dummyDrawer = document.getElementById('tips-drawer');
+            let createdDummy = false;
             if (!dummyDrawer) {
               dummyDrawer = document.createElement('div');
               dummyDrawer.id = 'tips-drawer';
+              dummyDrawer.style.display = 'none';
               const body = document.createElement('div');
               body.id = 'tips-live-body';
               dummyDrawer.appendChild(body);
               document.body.appendChild(dummyDrawer);
+              createdDummy = true;
             }
 
             panel.init();
@@ -1043,6 +1057,13 @@
             const alertsHtml = panel.liveBodyEl ? panel.liveBodyEl.innerHTML : '';
             panel.close();
             const wasClosed = !panel.isOpen();
+
+            // Limpa elementos de teste do DOM para manter o test.html 100% puro
+            if (createdDummy && dummyDrawer && dummyDrawer.parentNode) {
+              dummyDrawer.parentNode.removeChild(dummyDrawer);
+              panel.drawerEl = null;
+              panel.liveBodyEl = null;
+            }
 
             const pass = !!panel && wasOpen && wasClosed && alertsHtml.length > 0;
             return {
@@ -1479,12 +1500,15 @@
             // 6. Tenta ligar o repetidor sem nenhum roteador na cena -> Deve ser bloqueado
             const tryTurnOnWithoutMainBlocked = state.toggleDevicePower(meshNode.id) === false && !state.isDevicePowered(meshNode);
 
-            // 7. Valida diagnóstico contextual no TipsPanel
+            // 7. Valida diagnóstico contextual no TipsPanel com container isolado
             let tipsAlertFound = false;
             if (tipsPanel && tipsPanel.updateLiveDiagnostics) {
+              const isolatedContainer = document.createElement('div');
+              const prevLiveBody = tipsPanel.liveBodyEl;
+              tipsPanel.liveBodyEl = isolatedContainer;
               tipsPanel.updateLiveDiagnostics();
-              const alertsHtml = tipsPanel.liveBodyEl ? tipsPanel.liveBodyEl.innerHTML : '';
-              tipsAlertFound = alertsHtml.includes('Repetidor') || alertsHtml.includes('Mesh');
+              tipsAlertFound = isolatedContainer.innerHTML.includes('Repetidor') || isolatedContainer.innerHTML.includes('Mesh');
+              tipsPanel.liveBodyEl = prevLiveBody;
             } else {
               tipsAlertFound = true;
             }

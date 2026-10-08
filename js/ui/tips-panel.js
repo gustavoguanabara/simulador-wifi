@@ -57,8 +57,13 @@
             this.updateLiveDiagnostics();
           }
           if (event === 'repeater_auto_disabled' || event === 'repeater_power_blocked') {
-            this.updateLiveDiagnostics();
-            this.open();
+            // O painel de dicas só deve ser aberto automaticamente na tela principal (index.html)
+            const isMainApp = !!document.getElementById('app-container');
+            const isTestPage = typeof window !== 'undefined' && window.location && window.location.pathname && window.location.pathname.includes('test.html');
+            if (isMainApp && !isTestPage) {
+              this.updateLiveDiagnostics();
+              this.open();
+            }
           }
         });
       }
